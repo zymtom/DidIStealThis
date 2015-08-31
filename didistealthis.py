@@ -41,12 +41,12 @@ class disd():
         logging.info('Retrieving regex...')
         regex = {
             'py': [
-                r'(\w*?) =',
-                r'"(.*?)"',
-                r"'(.*?)'"
+                r'(\w*?)\W?=',
+                r'(["\'].*?["\'])'
             ],
             'php': [
-                
+                r'(\$.*?)\W?=',
+                r'(["\'].*?[\'"])'
             ]
         }
         if self.format in regex:
