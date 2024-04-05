@@ -23,10 +23,10 @@ class disd():
         self.found = {}
         logging.info('Starting to check '+ self.file + ' for plagiarization')
     def check(self):
-        self.getFile()
-        self.getFormat()
-        self.findKeywords()
-        self.search()
+        self.getFile() #Get the file to check
+        self.getFormat() #Get the format, which is necessary for the regex's
+        self.findKeywords() #Find the keywords using the regex
+        self.search() #Google the keywords
         
     def getFile(self):
         file = open(self.file, 'r')
@@ -38,16 +38,22 @@ class disd():
         for reg in regexs:
             find = re.findall(reg, self.filecontent)
             for f in find:
-                self.keywords[f] = False
+                linefound = ""
+                counter = 0
+                for line in self.filebyline:
+                    if f in x:
+                        break
+                    counter = counter + 1
+                self.keywords[f] = {'checked':False, 'line':counter}
                 logging.info("Keyword '"+f+"' found")
     def search(self):
-        for x in self.keywords:
-            r = requests.get("https://www.google.se/search?q="+x, verify=False)
+        for x in self.keywords: #Loop through keywords and request them to google
+            r = requests.get("https://www.google.se/search?q=\""+x+"\"", verify=False)
             found = re.findall(r'<li class="g">.*?<cite>(.*?)<\/cite>', r.content)
             for f in found:
-                self.websites[websites] = False
-            self.keywords[x] = True
-        for x in self.websites:
+                self.websites[websites] = x
+            self.keywords[x]['checked'] = True
+        for x in self.websites:  #Loop through the websites just retrieved. Should probably be handled in a separate thread or something
             r = requests.get(x, verify=False)
             for y in self.keywords:
                 if y in r.content:
@@ -66,13 +72,17 @@ class disd():
     def getRegex(self, ff=None):
         logging.info('Retrieving regex...')
         regex = {
-            'py': [
+            'py' : [
                 r'(\w*?)\W?=',
-                r'(["\'].*["\'])'
+                r'(["\'].*["\'])',
+                r'(#.*?\n|\r)',
+                r'(""".*?""")'
             ],
-            'php': [
+            'php' : [
                 r'(\$.*?)\W?=',
-                r'(["\'].*?[\'"])'
+                r'(["\'].*?[\'"])',
+                r'(\/\/.*?\n|\r)',
+                r'(\/\*.*?\*\/)'
             ]
         }
         if self.format in regex:
