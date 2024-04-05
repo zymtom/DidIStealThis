@@ -51,7 +51,9 @@ class disd():
             r = requests.get(x, verify=False)
             for y in self.keywords:
                 if y in r.content:
-                    
+                    for line in r.content.split("\n"):
+                        if y in line:
+                            self.found[y] = {}
     def getFormat(self):
         r = re.search(r'\.([A-z]{1,5})$', self.file)
         try:
