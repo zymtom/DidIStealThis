@@ -16,13 +16,45 @@ class disd():
     def __init__(self, filepath, outputfile):
         self.file = filepath
         self.outputfile = outputfile
-        
-    def line(self):
-        print "meme"
+        logging.info('Starting to check '+ self.file + ' for plagiarization')
+    def getFile(self):
+        file = open(self.file, 'r')
+        self.filecontent = file.read()
+        self.filebyline = file.readlines()
     def parse(self):
-        print "xd"
+        logging.info("Parsing the file...")
+        self.getFile()
+        self.getFormat()
+        regexs = self.getRegex()
+        for reg in regexs:
+            print re.findall(reg, self.filecontent)
     def getFormat(self):
-        
+        r = re.search(r'\.([A-z]{1,5})$', self.file)
+        try:
+            logging.info('Fileformat found, ' + r.group(1))
+            self.format = r.group(1)
+            return r.group(1)
+        except Exception:
+            logging.info('Fileformat could not be retrieved')
+            return False
+    def getRegex(self, ff=None):
+        logging.info('Retrieving regex...')
+        regex = {
+            'py': [
+                r'(\w*?) =',
+                r'"(.*?)"',
+                r"'(.*?)'"
+            ],
+            'php': [
+                
+            ]
+        }
+        if self.format in regex:
+            logging.info('Retrieved regex for format ' + self.format)
+            return regex[self.format]
+        else:
+            logging.info('Could not retrieve regex for format ' + self.format)
+            return false
 if __name__ == '__main__':      
     import sys
     import argparse
@@ -52,3 +84,4 @@ if __name__ == '__main__':
         level = logging.DEBUG
     logging.basicConfig(format='%(asctime)s [%(levelname)s] %(message)s', filename=outputfile, level=level)
     x = disd(filepath, outputfile)
+    x.parse()
