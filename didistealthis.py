@@ -20,6 +20,7 @@ class disd():
         self.outputfile = outputfile
         self.keywords = {}
         self.websites = {}
+        self.found = {}
         logging.info('Starting to check '+ self.file + ' for plagiarization')
     def check(self):
         self.getFile()
@@ -41,11 +42,16 @@ class disd():
                 logging.info("Keyword '"+f+"' found")
     def search(self):
         for x in self.keywords:
-            print x
-            """r = requests.get("https://www.google.se/search?q="+x, verify=False)
+            r = requests.get("https://www.google.se/search?q="+x, verify=False)
             found = re.findall(r'<li class="g">.*?<cite>(.*?)<\/cite>', r.content)
             for f in found:
-                print f"""
+                self.websites[websites] = False
+            self.keywords[x] = True
+        for x in self.websites:
+            r = requests.get(x, verify=False)
+            for y in self.keywords:
+                if y in r.content:
+                    
     def getFormat(self):
         r = re.search(r'\.([A-z]{1,5})$', self.file)
         try:
