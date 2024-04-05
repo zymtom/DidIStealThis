@@ -1,6 +1,7 @@
 import re
 import requests
 import logging
+import sys
 """
 didistealthis.py
 Version: 0.0 - Still in development
@@ -11,23 +12,40 @@ The script will search for keyphrases, variable names and lines of code to try t
 It's not 100% accurate and is very easily bypassed by simple obfuscation, so do not rely on this.
 Make sure that the person who is claiming code knows exactly what every piece of it does rather then rely on this identification.
 """
-
+sys.path.append('~/.local/pypack/lib/python2.7/site-packages/')
+requests.packages.urllib3.disable_warnings()
 class disd():
     def __init__(self, filepath, outputfile):
         self.file = filepath
         self.outputfile = outputfile
+        self.keywords = {}
+        self.websites = {}
         logging.info('Starting to check '+ self.file + ' for plagiarization')
+    def check(self):
+        self.getFile()
+        self.getFormat()
+        self.findKeywords()
+        self.search()
+        
     def getFile(self):
         file = open(self.file, 'r')
         self.filecontent = file.read()
         self.filebyline = file.readlines()
-    def parse(self):
+    def findKeywords(self):
         logging.info("Parsing the file...")
-        self.getFile()
-        self.getFormat()
         regexs = self.getRegex()
         for reg in regexs:
-            print re.findall(reg, self.filecontent)
+            find = re.findall(reg, self.filecontent)
+            for f in find:
+                self.keywords[f] = False
+                logging.info("Keyword '"+f+"' found")
+    def search(self):
+        for x in self.keywords:
+            print x
+            """r = requests.get("https://www.google.se/search?q="+x, verify=False)
+            found = re.findall(r'<li class="g">.*?<cite>(.*?)<\/cite>', r.content)
+            for f in found:
+                print f"""
     def getFormat(self):
         r = re.search(r'\.([A-z]{1,5})$', self.file)
         try:
@@ -42,7 +60,7 @@ class disd():
         regex = {
             'py': [
                 r'(\w*?)\W?=',
-                r'(["\'].*?["\'])'
+                r'(["\'].*["\'])'
             ],
             'php': [
                 r'(\$.*?)\W?=',
@@ -84,4 +102,4 @@ if __name__ == '__main__':
         level = logging.DEBUG
     logging.basicConfig(format='%(asctime)s [%(levelname)s] %(message)s', filename=outputfile, level=level)
     x = disd(filepath, outputfile)
-    x.parse()
+    x.check()
